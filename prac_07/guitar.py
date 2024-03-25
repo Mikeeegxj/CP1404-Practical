@@ -24,6 +24,9 @@ class Guitar:
     def is_vintage(self):
         """Determine if a Guitar is considered vintage or not based on age."""
         return self.get_age() >= VINTAGE_AGE
+    def __lt__(self, other):
+        """Less than, for sorting guitars by year."""
+        return self.year < other.year
 
 def main():
     filename = 'guitars.csv'
@@ -41,7 +44,7 @@ def main():
         cost = float(input("Enter the cost of the guitar: "))
         guitars.append(Guitar(name, year, cost))
 
-
+    guitars.sort()
     write_guitars_to_file(filename, guitars)
 
 
@@ -66,6 +69,20 @@ def write_guitars_to_file(filename, guitars):
         writer = csv.writer(file)
         for guitar in guitars:
             writer.writerow([guitar.name, guitar.year, guitar.cost])
+
+def load_guitars_from_file(filename):
+    guitars = []
+    try:
+        with open(filename, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)
+            for name, year, cost in reader:
+                guitars.append(Guitar(name, int(year), float(cost)))
+    except FileNotFoundError:
+        print(f"No file named {filename} found. Starting with an empty list.")
+    except ValueError:
+        print("Error: Invalid data format in file.")
+    return guitars
 
 
 

@@ -1,6 +1,5 @@
 import datetime
 
-
 class Project:
     def __init__(self, name, start_date, priority, estimate, completion):
         self.name = name
@@ -17,108 +16,11 @@ class Project:
     def is_complete(self):
         return self.completion == 100
 
+    def is_overdue(self):
+        return datetime.date.today() > self.start_date and not self.is_complete()
 
-def load_projects(filename):
-    projects = []
-    with open(filename, 'r') as file:
-        next(file)
-        for line in file:
-            parts = line.strip().split('\t')
-            if len(parts) == 5:
-                projects.append(Project(*parts))
-    return projects
+    def __lt__(self, other):
+        return self.priority < other.priority
 
-
-def save_projects(filename, projects):
-    with open(filename, 'w') as file:
-        file.write("Name\tStart Date\tPriority\tEstimate\tCompletion\n")
-        for project in projects:
-            file.write(f"{project.name}\t{project.start_date.strftime('%d/%m/%Y')}\t"
-                       f"{project.priority}\t{project.estimate}\t{project.completion}\n")
-
-
-def display_projects(projects):
-    incomplete = [p for p in projects if not p.is_complete()]
-    complete = [p for p in projects if p.is_complete()]
-
-    print("Incomplete projects:")
-    for project in sorted(incomplete, key=lambda x: x.priority):
-        print(f"  {project}")
-    print("Completed projects:")
-    for project in sorted(complete, key=lambda x: x.priority):
-        print(f"  {project}")
-
-
-def filter_projects_by_date(projects):
-    date_str = input("Show projects that start after date (dd/mm/yy): ")
-    date = datetime.datetime.strptime(date_str, "%d/%m/%Y").date()
-    filtered_projects = [p for p in projects if p.start_date > date]
-    for project in sorted(filtered_projects, key=lambda x: x.start_date):
-        print(f"  {project}")
-
-
-def add_new_project():
-    name = input("Name: ")
-    start_date = input("Start date (dd/mm/yy): ")
-    priority = input("Priority: ")
-    estimate = input("Cost estimate: ")
-    completion = input("Percent complete: ")
-    return Project(name, start_date, priority, estimate, completion)
-
-
-def update_project(projects):
-    for i, project in enumerate(projects):
-        print(f"{i} {project}")
-    project_index = int(input("Project choice: "))
-    selected_project = projects[project_index]
-
-    new_completion = input("New completion (%): ").strip()
-    new_priority = input("New priority: ").strip()
-
-    if new_completion:
-        selected_project.completion = int(new_completion)
-    if new_priority:
-        selected_project.priority = int(new_priority)
-
-
-def main():
-    projects = load_projects("projects.txt")
-    print("Welcome to Pythonic Project Management")
-    print(f"Loaded {len(projects)} projects from projects.txt")
-
-    while True:
-        print("- (L)oad projects")
-        print("- (S)ave projects")
-        print("- (D)isplay projects")
-        print("- (F)ilter projects by date")
-        print("- (A)dd new project")
-        print("- (U)pdate project")
-        print("- (Q)uit")
-        choice = input(">>> ").lower()
-
-        if choice == 'l':
-            filename = input("Enter the filename to load: ")
-            projects = load_projects(filename)
-        elif choice == 's':
-            filename = input("Enter the filename to save: ")
-            save_projects(filename, projects)
-        elif choice == 'd':
-            display_projects(projects)
-        elif choice == 'f':
-            filter_projects_by_date(projects)
-        elif choice == 'a':
-            project = add_new_project()
-            projects.append(project)
-        elif choice == 'u':
-            update_project(projects)
-        elif choice == 'q':
-            if input("Would you like to save the changes to projects.txt? (yes/no): ").lower() == 'yes':
-                save_projects("projects.txt", projects)
-            print("Thank you for using Pythonic Project Management software.")
-            break
-        else:
-            print("Invalid option, please try again.")
-
-
-if __name__ == "__main__":
-        main()
+    def __eq__(self, other):
+        return self.priority == other.priority
